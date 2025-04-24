@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .dataset-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-right: auto;
+        }
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.reset {
+            background: #e74c3c;
+        }
+        button.reset:hover {
+            background: #c0392b;
+        }
+        button.active {
+            background: #27ae60;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><%= title %></h1>
+        
+        <div class="controls">
+            <div class="dataset-controls" id="datasetControls">
+                <!-- Dataset toggles will be inserted here by JavaScript -->
+            </div>
+            <div class="zoom-controls">
+                <button id="zoomIn">Zoom In</button>
+                <button id="zoomOut">Zoom Out</button>
+                <button id="resetZoom" class="reset">Reset Zoom</button>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="stockChart"></canvas>
+        </div>
+        
+        <div class="info-panel">
+            <p><strong>Interactive Features:</strong></p>
+            <ul>
+                <li>Click on legend items or buttons above to toggle datasets</li>
+                <li>Drag to pan the chart</li>
+                <li>Mouse wheel to zoom (or use buttons above)</li>
+                <li>Hover over data points for detailed information</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const config = <%- chartConfig %>;
+            
+            // Add date parsing for better time axis handling
+            config.options.scales.x = {
+                type: 'time',
+                time: {
+                    parser: 'MM/DD/YYYY',
+                    tooltipFormat: 'MMM D, YYYY',
+                    unit: 'day'
+                },
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            };
+            
+            // Add zoom/pan functionality
+            config.options.plugins.zoom = {
+                zoom: {
+                    wheel: {
+                        enabled: true
+                    },
+                    pinch: {
+                        enabled: true
+                    },
+                    mode: 'xy',
+                },
+                pan: {
+                    enabled: true,
+                    mode: 'xy'
+                }
+            };
+            
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            const chart = new Chart(ctx, config);
+            
+            // Create dataset toggle buttons
+            const datasetControls = document.getElementById('datasetControls');
+            config.data.datasets.forEach((dataset, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'active';
+                btn.innerHTML = `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${dataset.borderColor}"></div>
+                        ${dataset.label}
+                    </div>
+                `;
+                btn.addEventListener('click', () => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.hidden = !meta.hidden;
+                    btn.classList.toggle('active');
+                    chart.update();
+                });
+                datasetControls.appendChild(btn);
+            });
+            
+            // Add zoom controls
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                chart.zoom(1.1);
+            });
+            
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                chart.zoom(0.9);
+            });
+            
+            document.getElementById('resetZoom').addEventListener('click', () => {
+                chart.resetZoom();
+            });
+            
+            // Make chart responsive to window resize
+            window.addEventListener('resize', function() {
+                chart.resize();
+            });
+        });
+    </script>
+</body>
+</html>
