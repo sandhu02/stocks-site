@@ -19,6 +19,10 @@ app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
+// Add these essential middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.get('/' , (req,res) => {
     res.redirect('/stock-chart')
 });
@@ -173,3 +177,6 @@ app.get('/stock-chart', (req, res) => {
             });
         });
 });
+
+// Export the Express app as Vercel serverless function
+module.exports = app;
