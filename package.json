@@ -2,7 +2,6 @@
   "name": "stocks-project",
   "version": "1.0.0",
   "main": "index.js",
-  
   "author": "awais",
   "license": "ISC",
   "description": "",
@@ -11,15 +10,13 @@
     "chartjs-node-canvas": "^5.0.0",
     "csv-parser": "^3.2.0",
     "ejs": "^3.1.10",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "serverless-http": "^3.2.0"
   },
-
   "engines": {
     "node": "18.x"
   },
   "scripts": {
     "start": "node index.js"
   }
-  
 }
-
