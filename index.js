@@ -1,14 +1,16 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const path = require('path');
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
 
 // Configure chart rendering
 const width = 800;
@@ -20,7 +22,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-const connection_string = 'mongodb+srv://captain192172:KZZIOPbUPL89D9mU@stocks-cluster.e9vybql.mongodb.net/stocks-k100'
+const connection_string = process.env.MONGODB_URI;
+if (!connection_string) {
+    console.error('MONGODB_URI is not defined in environment variables');
+    process.exit(1);
+}
 
 mongoose.connect(connection_string, {
     useNewUrlParser: true,
@@ -43,7 +49,7 @@ app.get('/stock-chart', async (req, res) => {
 
     try {
         const data = await K100.find();
-        console.log(data)
+        // console.log(data)  TODO : remove
 
         results = data.filter(item =>
             item.Price && item.Open && item.High && item.Low && item['Change %']
@@ -64,7 +70,7 @@ app.get('/stock-chart', async (req, res) => {
     
     const change = results.map(item => parseFloat(item['Change %'].replace('%', ''))).reverse();
 
-    console.log(results)
+    // console.log(results)  TODO :remove
     
 
     const configuration = {
