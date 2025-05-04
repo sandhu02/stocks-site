@@ -41,7 +41,7 @@ mongoose.connection.on('reconnected', () => console.log('MongoDB reconnected'));
 const K100 = require('./models/K100');
 
 app.get('/', (req, res) => {
-    res.redirect('/stock-chart')
+    res.render('home.ejs')
 });
 
 app.get('/stock-chart', async (req, res) => {
@@ -173,6 +173,90 @@ app.get('/stock-chart', async (req, res) => {
         title: "Karachi 100 Historical Data",
         chartConfig: JSON.stringify(configuration)
     });
+});
+
+app.get('/seasonality', async (req, res) => {
+    try {
+        const { stockSymbol } = req.query; // Get stock symbol from query parameters (search)
+
+        // Modify the query to filter by stock symbol if provided
+        const query = stockSymbol ? { Symbol: stockSymbol } : {};
+
+        const data = await K100.find(query);  // Filtered by stock symbol if provided
+
+        const monthlyChanges = Array.from({ length: 12 }, () => []);
+
+        data.forEach(item => {
+            if (item.Date && item['Change %']) {
+                const [month, , year] = item.Date.split('/').map(Number);
+                const change = parseFloat(item['Change %'].replace('%', ''));
+                if (!isNaN(month) && !isNaN(change)) {
+                    monthlyChanges[month - 1].push(change);
+                }
+            }
+        });
+
+        const avgMonthly = monthlyChanges.map((arr, idx) => {
+            const sum = arr.reduce((a, b) => a + b, 0);
+            const avg = arr.length ? sum / arr.length : 0;
+            return {
+                month: new Date(0, idx).toLocaleString('default', { month: 'long' }),
+                averageChange: parseFloat(avg.toFixed(2))
+            };
+        });
+
+        // Build chart config for rendering (line chart instead of bar)
+        const labels = avgMonthly.map(m => m.month);
+        const dataPoints = avgMonthly.map(m => m.averageChange);
+
+        const chartConfig = {
+            type: 'line',  // Change from bar to line chart
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Avg Monthly Change %${stockSymbol ? ' for ' + stockSymbol : ''}`,
+                    data: dataPoints,
+                    fill: false,
+                    borderColor: 'rgba(54, 162, 235, 0.7)', // line color
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Monthly Stock Seasonality${stockSymbol ? ` (${stockSymbol})` : ''} - Change %`
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: context => `${context.raw.toFixed(2)}%`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Average Change %'
+                        }
+                    }
+                }
+            }
+        };
+
+        // Render to EJS
+        res.render('seasonality.ejs', {
+            title: "Monthly Seasonality",
+            chartConfig: JSON.stringify(chartConfig),
+            stockSymbol: stockSymbol || ''
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error calculating seasonality', error: err });
+    }
 });
 
 // Start server - moved to end of file

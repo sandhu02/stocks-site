@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Analysis Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .heading {
+            font-size: 32px;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .static-text {
+            margin-right: 10px;
+        }
+
+        .typing-text {
+            color: #00ff6a;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            border-right: 3px solid #00ff6a;
+            width: 0ch;
+            animation: typing 1s steps(32, end) forwards, blink 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0ch; }
+            to { width: 21ch; } /* Exact character count of "Stock Analysis Dashboard" */
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 500;
+            color: white;
+            background-color: #1e90ff;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #0073e6;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="heading">
+        <div class="static-text">Welcome to the</div>
+        <div class="typing-text">Stock Analysis Dashboard</div>
+    </div>
+
+    <div class="button-container">
+        <a href="/stock-chart" class="btn">View Stock Chart</a>
+        <a href="/seasonality" class="btn">View Seasonality</a>
+    </div>
+
+</body>
+</html>
